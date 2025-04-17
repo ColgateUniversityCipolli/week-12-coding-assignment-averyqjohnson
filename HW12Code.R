@@ -8,7 +8,6 @@
 ################################################################################
 library(tidyverse)
 library(VGAM)
-library(effectsize)
 
 # (a) t-val for statistically discernible support for t20
 # gives t val at 95th percentile 
@@ -60,9 +59,9 @@ n <- 15
 true_means <- c(10 / (10+2), 2 / (2+10), 10/(10+10))
 
 # initialize counters
-type_1_error_left <- 0
-type_1_error_right<- 0
-type_1_error_two_tailed <- 0
+type_1_error_left <- c(0,0,0)
+type_1_error_right<- c(0,0,0)
+type_1_error_two_tailed <- c(0,0,0)
 
 for (i in 1:simulations){
   # generate samples from Beta distributions
@@ -86,37 +85,42 @@ for (i in 1:simulations){
   t_two_3 <- t.test(data_beta3, mu=true_means[3], alternative="two.sided")
   
   # count type one errors
-  type_1_error_left <- type_1_error_left + (t_left_1$p.value < alpha) +
-                                          (t_left_2$p.value < alpha) +
-                                          (t_left_3$p.value < alpha)
+  # Count Type I errors
+  type_1_error_left[1] <- type_1_error_left[1] + (t_left_1$p.value < alpha)
+  type_1_error_left[2] <- type_1_error_left[2] + (t_left_2$p.value < alpha)
+  type_1_error_left[3] <- type_1_error_left[3] + (t_left_3$p.value < alpha)
   
-  type_1_error_right <- type_1_error_right + (t_right_1$p.value < alpha) +
-                                             (t_right_2$p.value < alpha) +
-                                             (t_right_3$p.value < alpha)
+  type_1_error_right[1] <- type_1_error_right[1] + (t_right_1$p.value < alpha)
+  type_1_error_right[2] <- type_1_error_right[2] + (t_right_2$p.value < alpha)
+  type_1_error_right[3] <- type_1_error_right[3] + (t_right_3$p.value < alpha)
   
-  type_1_error_two_tailed <- type_1_error_two_tailed + (t_two_1$p.value < alpha) +
-                                                      (t_two_2$p.value < alpha)+ 
-                                                      (t_two_3$p.value < alpha)
-  
+  type_1_error_two_tailed[1] <- type_1_error_two_tailed[1] + (t_two_1$p.value < alpha)
+  type_1_error_two_tailed[2] <- type_1_error_two_tailed[2] + (t_two_2$p.value < alpha)
+  type_1_error_two_tailed[3] <- type_1_error_two_tailed[3] + (t_two_3$p.value < alpha)
 }
 
-type_1_error_rate_left <- type_1_error_left / (simulations * 3)
-type_1_error_rate_right <- type_1_error_right / (simulations * 3)
-type_1_error_rate_two_tailed <- type_1_error_two_tailed / (simulations * 3)
+
+type_1_error_rate_left <- type_1_error_left / simulations
 
 # (a) proportion of time we make a Type 1 error for left-tailed
-(type_1_error_rate_left <- type_1_error_left / (simulations * 3))
+(type_1_error_rate_left <- type_1_error_left / simulations)
+(average_type_1_error_left <- mean(type_1_error_rate_left))
+
 
 # (b) proportion of time we make a Type 1 error for right-tailed
-(type_1_error_rate_right <- type_1_error_right / (simulations * 3))
+(type_1_error_rate_right <- type_1_error_right / simulations)
+(average_type_1_error_right <- mean(type_1_error_rate_right))
 
 # (c) proportion of time we make a Type 1 error for two-tailed
-(type_1_error_rate_two_tailed <- type_1_error_two_tailed / (simulations * 3))
+(type_1_error_rate_two_tailed <- type_1_error_two_tailed / simulations)
+(average_type_1_error_two_tailed <- mean(type_1_error_rate_two_tailed))
 
 # (d) how does skewness effect Type 1 error
-library(e1071)
-skewness(rbeta(10000, 10, 2)) # should be left-skewed
-skewness(rbeta(10000, 2, 10))  # right-skewed
-skewness(rbeta(10000, 10, 10)) # symmetric
-
+error_comparison <- data.frame(
+  distribution = c("Beta(10,2)", "Beta(2,10)", "Beta(10,10)"),
+  left_tailed = type_1_error_rate_left,
+  right_tailed = type_1_error_rate_right,
+  two_tailed = type_1_error_rate_two_tailed
+)
+view(error_comparison)
 
