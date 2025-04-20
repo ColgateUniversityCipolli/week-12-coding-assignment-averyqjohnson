@@ -184,7 +184,7 @@ so if $t_{30} > 1.699$, they would reject $H_{0}$ at that point.
 \hldef{(type_1_error_rate} \hlkwb{<-} \hldef{type_1_error_count} \hlopt{/} \hldef{simulations)}
 \end{alltt}
 \begin{verbatim}
-## [1] 0.0756
+## [1] 0.0759
 \end{verbatim}
 \end{kframe}
 \end{knitrout}
@@ -209,17 +209,148 @@ Type I error.
   \begin{enumerate}
     \item What proportion of the time do we make an error of Type I for a
     left-tailed test?
+    
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+    \hlcom{################################################################################}
+  \hlcom{# Question 2}
+  \hlcom{################################################################################}
 
+  \hldef{simulations} \hlkwb{<-} \hlnum{10000}
+  \hldef{alpha} \hlkwb{<-} \hlnum{0.05}
+  \hldef{n} \hlkwb{<-} \hlnum{15}
+
+  \hldef{true_means} \hlkwb{<-} \hlkwd{c}\hldef{(}\hlnum{10} \hlopt{/} \hldef{(}\hlnum{10}\hlopt{+}\hlnum{2}\hldef{),} \hlnum{2} \hlopt{/} \hldef{(}\hlnum{2}\hlopt{+}\hlnum{10}\hldef{),} \hlnum{10}\hlopt{/}\hldef{(}\hlnum{10}\hlopt{+}\hlnum{10}\hldef{))}
+
+  \hlcom{# initialize counters}
+  \hldef{type_1_error_left} \hlkwb{<-} \hlkwd{c}\hldef{(}\hlnum{0}\hldef{,}\hlnum{0}\hldef{,}\hlnum{0}\hldef{)}
+  \hldef{type_1_error_right}\hlkwb{<-} \hlkwd{c}\hldef{(}\hlnum{0}\hldef{,}\hlnum{0}\hldef{,}\hlnum{0}\hldef{)}
+  \hldef{type_1_error_two_tailed} \hlkwb{<-} \hlkwd{c}\hldef{(}\hlnum{0}\hldef{,}\hlnum{0}\hldef{,}\hlnum{0}\hldef{)}
+
+  \hlkwa{for} \hldef{(i} \hlkwa{in} \hlnum{1}\hlopt{:}\hldef{simulations)\{}
+    \hlcom{# generate samples from Beta distributions}
+    \hldef{data_beta1} \hlkwb{<-} \hlkwd{rbeta}\hldef{(n,} \hlnum{10}\hldef{,} \hlnum{2}\hldef{)}
+    \hldef{data_beta2} \hlkwb{<-} \hlkwd{rbeta}\hldef{(n,} \hlnum{2}\hldef{,} \hlnum{10}\hldef{)}
+    \hldef{data_beta3} \hlkwb{<-} \hlkwd{rbeta}\hldef{(n,} \hlnum{10}\hldef{,} \hlnum{10}\hldef{)}
+
+    \hlcom{# conduct left tailed t test}
+    \hldef{t_left_1} \hlkwb{<-} \hlkwd{t.test}\hldef{(data_beta1,} \hlkwc{mu}\hldef{=true_means[}\hlnum{1}\hldef{],} \hlkwc{alternative}\hldef{=}\hlsng{"less"}\hldef{)}
+    \hldef{t_left_2} \hlkwb{<-} \hlkwd{t.test}\hldef{(data_beta2,} \hlkwc{mu}\hldef{=true_means[}\hlnum{2}\hldef{],} \hlkwc{alternative}\hldef{=}\hlsng{"less"}\hldef{)}
+    \hldef{t_left_3} \hlkwb{<-} \hlkwd{t.test}\hldef{(data_beta3,} \hlkwc{mu}\hldef{=true_means[}\hlnum{3}\hldef{],} \hlkwc{alternative}\hldef{=}\hlsng{"less"}\hldef{)}
+
+    \hlcom{# conduct right tailed t test}
+    \hldef{t_right_1} \hlkwb{<-} \hlkwd{t.test}\hldef{(data_beta1,} \hlkwc{mu}\hldef{=true_means[}\hlnum{1}\hldef{],} \hlkwc{alternative}\hldef{=}\hlsng{"greater"}\hldef{)}
+    \hldef{t_right_2} \hlkwb{<-} \hlkwd{t.test}\hldef{(data_beta2,} \hlkwc{mu}\hldef{=true_means[}\hlnum{2}\hldef{],} \hlkwc{alternative}\hldef{=}\hlsng{"greater"}\hldef{)}
+    \hldef{t_right_3} \hlkwb{<-} \hlkwd{t.test}\hldef{(data_beta3,} \hlkwc{mu}\hldef{=true_means[}\hlnum{3}\hldef{],} \hlkwc{alternative}\hldef{=}\hlsng{"greater"}\hldef{)}
+
+    \hlcom{# conduct two tailed t test}
+    \hldef{t_two_1} \hlkwb{<-} \hlkwd{t.test}\hldef{(data_beta1,} \hlkwc{mu}\hldef{=true_means[}\hlnum{1}\hldef{],} \hlkwc{alternative}\hldef{=}\hlsng{"two.sided"}\hldef{)}
+    \hldef{t_two_2} \hlkwb{<-} \hlkwd{t.test}\hldef{(data_beta2,} \hlkwc{mu}\hldef{=true_means[}\hlnum{2}\hldef{],} \hlkwc{alternative}\hldef{=}\hlsng{"two.sided"}\hldef{)}
+    \hldef{t_two_3} \hlkwb{<-} \hlkwd{t.test}\hldef{(data_beta3,} \hlkwc{mu}\hldef{=true_means[}\hlnum{3}\hldef{],} \hlkwc{alternative}\hldef{=}\hlsng{"two.sided"}\hldef{)}
+
+    \hlcom{# count type one errors}
+    \hlcom{# Count Type I errors}
+    \hldef{type_1_error_left[}\hlnum{1}\hldef{]} \hlkwb{<-} \hldef{type_1_error_left[}\hlnum{1}\hldef{]} \hlopt{+} \hldef{(t_left_1}\hlopt{$}\hldef{p.value} \hlopt{<} \hldef{alpha)}
+    \hldef{type_1_error_left[}\hlnum{2}\hldef{]} \hlkwb{<-} \hldef{type_1_error_left[}\hlnum{2}\hldef{]} \hlopt{+} \hldef{(t_left_2}\hlopt{$}\hldef{p.value} \hlopt{<} \hldef{alpha)}
+    \hldef{type_1_error_left[}\hlnum{3}\hldef{]} \hlkwb{<-} \hldef{type_1_error_left[}\hlnum{3}\hldef{]} \hlopt{+} \hldef{(t_left_3}\hlopt{$}\hldef{p.value} \hlopt{<} \hldef{alpha)}
+
+    \hldef{type_1_error_right[}\hlnum{1}\hldef{]} \hlkwb{<-} \hldef{type_1_error_right[}\hlnum{1}\hldef{]} \hlopt{+} \hldef{(t_right_1}\hlopt{$}\hldef{p.value} \hlopt{<} \hldef{alpha)}
+    \hldef{type_1_error_right[}\hlnum{2}\hldef{]} \hlkwb{<-} \hldef{type_1_error_right[}\hlnum{2}\hldef{]} \hlopt{+} \hldef{(t_right_2}\hlopt{$}\hldef{p.value} \hlopt{<} \hldef{alpha)}
+    \hldef{type_1_error_right[}\hlnum{3}\hldef{]} \hlkwb{<-} \hldef{type_1_error_right[}\hlnum{3}\hldef{]} \hlopt{+} \hldef{(t_right_3}\hlopt{$}\hldef{p.value} \hlopt{<} \hldef{alpha)}
+
+    \hldef{type_1_error_two_tailed[}\hlnum{1}\hldef{]} \hlkwb{<-} \hldef{type_1_error_two_tailed[}\hlnum{1}\hldef{]} \hlopt{+} \hldef{(t_two_1}\hlopt{$}\hldef{p.value} \hlopt{<} \hldef{alpha)}
+    \hldef{type_1_error_two_tailed[}\hlnum{2}\hldef{]} \hlkwb{<-} \hldef{type_1_error_two_tailed[}\hlnum{2}\hldef{]} \hlopt{+} \hldef{(t_two_2}\hlopt{$}\hldef{p.value} \hlopt{<} \hldef{alpha)}
+    \hldef{type_1_error_two_tailed[}\hlnum{3}\hldef{]} \hlkwb{<-} \hldef{type_1_error_two_tailed[}\hlnum{3}\hldef{]} \hlopt{+} \hldef{(t_two_3}\hlopt{$}\hldef{p.value} \hlopt{<} \hldef{alpha)}
+  \hldef{\}}
+
+
+  \hldef{type_1_error_rate_left} \hlkwb{<-} \hldef{type_1_error_left} \hlopt{/} \hldef{simulations}
+
+  \hlcom{# (a) proportion of time we make a Type 1 error for left-tailed}
+  \hldef{(type_1_error_rate_left} \hlkwb{<-} \hldef{type_1_error_left} \hlopt{/} \hldef{simulations)}
+\end{alltt}
+\begin{verbatim}
+## [1] 0.0291 0.0820 0.0470
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+  When using a left-tailed t-test, the Type 1 error rate was around 3\% for Beta(10,2), 8\% for Beta(2,10), and 5\% for Beta(10,10). These results suggest that skewness can substantially influence error rates, with the right-skewed distribution (Beta(2,10)) producing an inflated rate of false positives when using a left-tailed test.
+  
     \item What proportion of the time do we make an error of Type I for a
     right-tailed test?
+    
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+  \hlcom{# (b) proportion of time we make a Type 1 error for right-tailed}
+\hldef{(type_1_error_rate_right} \hlkwb{<-} \hldef{type_1_error_right} \hlopt{/} \hldef{simulations)}
+\end{alltt}
+\begin{verbatim}
+## [1] 0.0800 0.0299 0.0533
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+  
+  For right-tailed tests, Type 1 error occurred about 8\% of the time for Beta(10,2), 3\% of the time for Beta(2,10), and 5\% of the time for Beta(10,10). The left-skewed distribution Beta(10,2) distribution shows an elevated error rate, whereas the right-skewed Beta(2,10) suppresses it. Again, the symmetric distribution comes closest to the typical 5\%.
 
     \item What proportion of the time do we make an error of Type I for a
     two-tailed test?
     
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+  \hlcom{# (c) proportion of time we make a Type 1 error for two-tailed}
+\hldef{(type_1_error_rate_two_tailed} \hlkwb{<-} \hldef{type_1_error_two_tailed} \hlopt{/} \hldef{simulations)}
+\end{alltt}
+\begin{verbatim}
+## [1] 0.0589 0.0629 0.0504
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+    
+    Two-tailed tests produced more stable results, with error rates of 6\% for Beta(10,2), 6\% for Beta(2,10), and 5\% for Beta(10,10). The symmetric distribution aligns most closely with the expected Type 1 error, while skewed distributions only deviate slightly.
     
     \item How does skewness of the underlying population distribution effect
     Type I error across the test types?
+    
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+ \hlcom{# (d) how does skewness effect Type 1 error}
+\hldef{error_comparison} \hlkwb{<-} \hlkwd{data.frame}\hldef{(}
+  \hlkwc{distribution} \hldef{=} \hlkwd{c}\hldef{(}\hlsng{"Beta(10,2)"}\hldef{,} \hlsng{"Beta(2,10)"}\hldef{,} \hlsng{"Beta(10,10)"}\hldef{),}
+  \hlkwc{left_tailed} \hldef{= type_1_error_rate_left,}
+  \hlkwc{right_tailed} \hldef{= type_1_error_rate_right,}
+  \hlkwc{two_tailed} \hldef{= type_1_error_rate_two_tailed}
+\hldef{)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+    
 
+  
+% latex table generated in R 4.4.2 by xtable 1.8-4 package
+% Sun Apr 20 15:08:52 2025
+\begin{table}[H]
+\centering
+\begingroup\small
+\begin{tabular}{lrrr}
+  \hline
+distribution & left\_tailed & right\_tailed & two\_tailed \\ 
+  \hline
+Beta(10,2) & 0.03 & 0.08 & 0.06 \\ 
+  Beta(2,10) & 0.08 & 0.03 & 0.06 \\ 
+  Beta(10,10) & 0.05 & 0.05 & 0.05 \\ 
+   \hline
+\end{tabular}
+\endgroup
+\caption{Type 1 Error Comparison} 
+\label{errorcomparison}
+\end{table}
+
+
+Skewness affects Type 1 error rates asymmetrically depending on the direction of the test. Right-skewed distributions like Beta(2,10) inflate the error rate for left-tailed tests and reduce it for right-tailed tests. Left-skewed distributions like Beta(10,2) show the opposite pattern. Two-tailed tests are less sensitive to skew, though they still deviate slightly from the nominal rate when the data are not symmetric. These patterns suggest that the t-test is less robust under skewed coniditions, especially for one-sided hypotheses with small samples.
 
   \end{enumerate}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

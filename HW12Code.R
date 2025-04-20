@@ -104,16 +104,13 @@ type_1_error_rate_left <- type_1_error_left / simulations
 
 # (a) proportion of time we make a Type 1 error for left-tailed
 (type_1_error_rate_left <- type_1_error_left / simulations)
-(average_type_1_error_left <- mean(type_1_error_rate_left))
 
 
 # (b) proportion of time we make a Type 1 error for right-tailed
 (type_1_error_rate_right <- type_1_error_right / simulations)
-(average_type_1_error_right <- mean(type_1_error_rate_right))
 
 # (c) proportion of time we make a Type 1 error for two-tailed
 (type_1_error_rate_two_tailed <- type_1_error_two_tailed / simulations)
-(average_type_1_error_two_tailed <- mean(type_1_error_rate_two_tailed))
 
 # (d) how does skewness effect Type 1 error
 error_comparison <- data.frame(
@@ -122,5 +119,12 @@ error_comparison <- data.frame(
   right_tailed = type_1_error_rate_right,
   two_tailed = type_1_error_rate_two_tailed
 )
+
 view(error_comparison)
+
+library(e1071)
+skewness(data_beta1)
+skewness(data_beta2)
+skewness(data_beta3)
+
 

@@ -134,17 +134,124 @@ Type I error.
   \begin{enumerate}
     \item What proportion of the time do we make an error of Type I for a
     left-tailed test?
-
+    
+      <<size="scriptsize">>=
+    ################################################################################
+  # Question 2
+  ################################################################################
+  
+  simulations <- 10000
+  alpha <- 0.05
+  n <- 15
+  
+  true_means <- c(10 / (10+2), 2 / (2+10), 10/(10+10))
+  
+  # initialize counters
+  type_1_error_left <- c(0,0,0)
+  type_1_error_right<- c(0,0,0)
+  type_1_error_two_tailed <- c(0,0,0)
+  
+  for (i in 1:simulations){
+    # generate samples from Beta distributions
+    data_beta1 <- rbeta(n, 10, 2)
+    data_beta2 <- rbeta(n, 2, 10)
+    data_beta3 <- rbeta(n, 10, 10)
+    
+    # conduct left tailed t test
+    t_left_1 <- t.test(data_beta1, mu=true_means[1], alternative="less")
+    t_left_2 <- t.test(data_beta2, mu=true_means[2], alternative="less")
+    t_left_3 <- t.test(data_beta3, mu=true_means[3], alternative="less")
+    
+    # conduct right tailed t test
+    t_right_1 <- t.test(data_beta1, mu=true_means[1], alternative="greater")
+    t_right_2 <- t.test(data_beta2, mu=true_means[2], alternative="greater")
+    t_right_3 <- t.test(data_beta3, mu=true_means[3], alternative="greater")
+    
+    # conduct two tailed t test
+    t_two_1 <- t.test(data_beta1, mu=true_means[1], alternative="two.sided")
+    t_two_2 <- t.test(data_beta2, mu=true_means[2], alternative="two.sided")
+    t_two_3 <- t.test(data_beta3, mu=true_means[3], alternative="two.sided")
+    
+    # count type one errors
+    # Count Type I errors
+    type_1_error_left[1] <- type_1_error_left[1] + (t_left_1$p.value < alpha)
+    type_1_error_left[2] <- type_1_error_left[2] + (t_left_2$p.value < alpha)
+    type_1_error_left[3] <- type_1_error_left[3] + (t_left_3$p.value < alpha)
+    
+    type_1_error_right[1] <- type_1_error_right[1] + (t_right_1$p.value < alpha)
+    type_1_error_right[2] <- type_1_error_right[2] + (t_right_2$p.value < alpha)
+    type_1_error_right[3] <- type_1_error_right[3] + (t_right_3$p.value < alpha)
+    
+    type_1_error_two_tailed[1] <- type_1_error_two_tailed[1] + (t_two_1$p.value < alpha)
+    type_1_error_two_tailed[2] <- type_1_error_two_tailed[2] + (t_two_2$p.value < alpha)
+    type_1_error_two_tailed[3] <- type_1_error_two_tailed[3] + (t_two_3$p.value < alpha)
+  }
+  
+  
+  type_1_error_rate_left <- type_1_error_left / simulations
+  
+  # (a) proportion of time we make a Type 1 error for left-tailed
+  (type_1_error_rate_left <- type_1_error_left / simulations)
+  
+  @
+  When using a left-tailed t-test, the Type 1 error rate was around 3\% for Beta(10,2), 8\% for Beta(2,10), and 5\% for Beta(10,10). These results suggest that skewness can substantially influence error rates, with the right-skewed distribution (Beta(2,10)) producing an inflated rate of false positives when using a left-tailed test.
+  
     \item What proportion of the time do we make an error of Type I for a
     right-tailed test?
+    
+<<size="scriptsize">>=
+  # (b) proportion of time we make a Type 1 error for right-tailed
+(type_1_error_rate_right <- type_1_error_right / simulations)
+  @
+  
+  For right-tailed tests, Type 1 error occurred about 8\% of the time for Beta(10,2), 3\% of the time for Beta(2,10), and 5\% of the time for Beta(10,10). The left-skewed distribution Beta(10,2) distribution shows an elevated error rate, whereas the right-skewed Beta(2,10) suppresses it. Again, the symmetric distribution comes closest to the typical 5\%.
 
     \item What proportion of the time do we make an error of Type I for a
     two-tailed test?
     
+    <<size="scriptsize">>=
+  # (c) proportion of time we make a Type 1 error for two-tailed
+(type_1_error_rate_two_tailed <- type_1_error_two_tailed / simulations)
+  @
+    
+    Two-tailed tests produced more stable results, with error rates of 6\% for Beta(10,2), 6\% for Beta(2,10), and 5\% for Beta(10,10). The symmetric distribution aligns most closely with the expected Type 1 error, while skewed distributions only deviate slightly.
     
     \item How does skewness of the underlying population distribution effect
     Type I error across the test types?
+    
+<<size="scriptsize">>=
+ # (d) how does skewness effect Type 1 error
+error_comparison <- data.frame(
+  distribution = c("Beta(10,2)", "Beta(2,10)", "Beta(10,10)"),
+  left_tailed = type_1_error_rate_left,
+  right_tailed = type_1_error_rate_right,
+  two_tailed = type_1_error_rate_two_tailed
+) 
+@
+    
+<<echo=FALSE, eval=TRUE, results="asis", message=FALSE, warning=FALSE, size='scriptsize'>>=
+  
+error_comparison <- data.frame(
+  distribution = c("Beta(10,2)", "Beta(2,10)", "Beta(10,10)"),
+  left_tailed = type_1_error_rate_left,
+  right_tailed = type_1_error_rate_right,
+  two_tailed = type_1_error_rate_two_tailed
+)
 
+library(xtable)
+latex_table <- xtable(error_comparison, 
+                      caption="Type 1 Error Comparison",
+                      label="errorcomparison")
+  @
+  
+<<echo=FALSE, eval=TRUE, results="asis">>=
+# placement="H" places table [H]ere, just like plot
+# include.rownames=FALSE doesn’t print the row numbers in this example
+print(latex_table,
+table.placement = "H", include.rownames=FALSE, size = "small")
+@
+
+Skewness affects Type 1 error rates asymmetrically depending on the direction of the test. Right-skewed distributions like Beta(2,10) inflate the error rate for left-tailed tests and reduce it for right-tailed tests. Left-skewed distributions like Beta(10,2) show the opposite pattern. Two-tailed tests are less sensitive to skew, though they still deviate slightly from the nominal rate when the data are not symmetric. These patterns suggest that the t-test is less robust under skewed coniditions, especially for one-sided hypotheses with small samples.
 
   \end{enumerate}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
